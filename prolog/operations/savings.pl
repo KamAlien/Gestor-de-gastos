@@ -3,17 +3,14 @@
 %===========================================================================================================================
 :- ensure_loaded('../datos').
 :- ensure_loaded(income).
-:- ensure_loaded(auxiliary_methods).
+:- ensure_loaded(expenses).
+:- ensure_loaded('auxiliary methods/compare_with_lastmonth').
+
 
 % TOTAL DE AHORRO
-%Caso 1: Si el mes es enero, se compara con diciembre del año anterior
-%Caso 2: Si el mes es diferente a enero, se compara con el mes anterior
 dinero_restante(Year, Month, Total):-
-    findall(Monto, expenses(Year, Month, _, _, Monto, _), List_expenses),
-    findall(Monto, incomes(Year, Month, _, _, Monto, _), List_incomes),
-
-    sum_list(List_expenses, Expenses),
-    sum_list(List_incomes, Incomes),
+    total_gastos(Year, Month, Expenses),
+    total_ingresos(Year, Month, Incomes),
     Total is Incomes - Expenses.
 
 % Metodo principal para comparar el ahorro con el mes anterior
