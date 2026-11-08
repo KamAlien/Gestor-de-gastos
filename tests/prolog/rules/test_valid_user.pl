@@ -4,7 +4,7 @@
 %   swipl -g run_tests -t halt tests/rules/test_valid_user.pl
 %=================================================================================================================================================
 :- use_module(library(plunit)).
-:- ensure_loaded('../../prolog/rules/valid_user').
+:- ensure_loaded('../../../prolog/rules/valid_user').
 
 %--------------------------------------------------------------------------
 % valid_user/3 : los DATOS son aceptables?
