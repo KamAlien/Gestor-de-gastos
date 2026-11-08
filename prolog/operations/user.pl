@@ -1,8 +1,10 @@
 %=======================================================================================================================================
 % OPERACIONES DEL USUARIO
 %=======================================================================================================================================
-:- ensure_loaded('../rules/valid_user').
 :- ensure_loaded('../user_data').
+:- ensure_loaded('../datos').
+:- ensure_loaded('../rules/valid_user').
+:- ensure_loaded('../rules/valid_register_operations').
 
 
 % Registrarse
@@ -20,6 +22,18 @@ update_user( Name, Age, Email):-
     retract(user(_, _, _)),
     assertz(user(Name, Age, Email)).
 
+
+
+% REGISTRAR SUS GASTOS E INGRESOS.
+% REGISTRAR SUS INGRESOS.
+register_incomes(Year, Month, Day, Description, Amount, Category):-
+    valid_incomes(Year, Month, Day, Description, Amount, Category),
+    assertz(incomes(Year, Month, Day, Description, Amount, Category)). 
+
+% REGISTRAR SUS GASTOS
+register_expenses(Year, Month, Day, Description, Amount, Category):-
+    valid_expenses(Year, Month, Day, Description, Amount, Category),
+    assertz(expenses(Year, Month, Day, Description, Amount, Category)).
 
 % Solo puede haber a lo sumo un usuario
 cant_user(N):-
