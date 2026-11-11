@@ -3,12 +3,12 @@
 %===============================================================
 
 % GASTOS (Y, M, D, DESCRIPTION, MONTO, CATEGORIA)
-:- dynamic expenses/6.
-expenses(2026, 2, 28, "Renta", 1000, necesidad).
-expenses(2026, 3, 1, "Renta", 1000, necesidad).
-expenses(2026, 3, 2, "Super mercado", 200, necesidad).
-expenses(2026, 3,3, "Restaurante", 500, deseo).
-expenses(2026, 3, 4, "Doctor", 100, necesidad).
+:- dynamic expenses/7.
+expenses(2026, 2, 28, "Renta", 1000, necesidad, "alquiler").
+expenses(2026, 3, 1, "Renta", 1000, necesidad, "alquiler").
+expenses(2026, 3, 2, "Super mercado", 200, necesidad, "super mercado").
+expenses(2026, 3,3, "Restaurante", 500, deseo, "salidas").
+expenses(2026, 3, 4, "Doctor", 100, necesidad, "hospital").
 
 % INGRESOS (Y, M, D, DESCRIPTION, MONTO, TIPO DE INGRESO)
 
@@ -25,4 +25,3 @@ incomes(2026, 3, 4, "Regalo", 200, ingreso_extra).
 savings_adjustments(2026, 3, 5, 100).
 savings_adjustments(2026, 3, 6, -50).
 savings_adjustments(2026, 3, 7, 200).
-savings_adjustments(2026, 3, 8, -100).
