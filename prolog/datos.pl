@@ -25,3 +25,21 @@ incomes(2026, 3, 4, "Regalo", 200, ingreso_extra).
 savings_adjustments(2026, 3, 5, 100).
 savings_adjustments(2026, 3, 6, -50).
 savings_adjustments(2026, 3, 7, 200).
+
+savings_adjustments(2026, 3, 8, -100).
+
+% CUENTAS DE AHORRO (LA SUBCATEGORIA PARA GASTOS ES OPCIONAL) 
+% CATEGORIA, SUBCATEGORIA, DESCRIPCION, PORCENTAJE DE AHORRO DEL MES
+
+:- dynamic savings_account/4.
+
+savings_account(necesidad, "hospital", "Cualquier tipo de necesidad medica", 20).
+savings_account(deseo, "viajes", "Viajes en vacaciones", 10).
+
+:- dynamic savings_account_global/3.
+
+savings_account_global("Cuenta de Ahorro global","Es una cuenta de ahorro global, no responde a ningun tipo de categorias, sino mas bien, el porcentaje del ahorro del mes que se define para esta cuenta es el sobrante de la suma de las cuentas de ahorro. Esta cuenta no se podra eliminar o actualizar.", 70).
+
+% SUBCATEGORIAS : CATEGORIA, SUBCATEGORIA, DESCRIPCION
+:- dynamic subcategory/3.
+
