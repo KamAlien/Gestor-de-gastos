@@ -3,6 +3,20 @@
 %=========================================================================================================================
 :- ensure_loaded('../../types/categories').
 
+
+% Comprueba que sea valido los argumentos
+arguments_rules(Category, Subcategory, Description, Percent):-
+    string(Description),
+    expenses_type(Category),
+    string(Subcategory),
+    number(Percent),
+    Subcategory \== "",
+    Subcategory \== "Cuenta de Ahorro global",
+    Description \== "",
+    Description \== "Es una cuenta de ahorro global, no responde a ningun tipo de categorias, sino mas bien, el porcentaje del ahorro del mes que se define para esta cuenta es el sobrante de la suma de las cuentas de ahorro. Esta cuenta no se podra eliminar o actualizar.",
+    Percent >= 0.
+
+
 % Preguntar por una cuenta de ahorro
 get_saving_account(Category, Subcategory, Saving_account):-
     findall((Category, Subcategory, Percent), savings_account(Category, Subcategory, _, Percent), Saving_account).
@@ -10,7 +24,7 @@ get_saving_account(Category, Subcategory, Saving_account):-
 
 % Calcula la suma de los porcentajes de las cuentas para una cuenta nueva
 sum_savings_account_percent(Percent, Total_percents):-
-    findall(Percents, savings_account(_, _, _, Percents), List_percent),
+    findall(Percents, (savings_account(Category , _, _, Percents), Category \== global), List_percent),
     sum_list(List_percent, Total_percent),
     Is_valid is Total_percent + Percent,
     Is_valid =< 100,
@@ -38,17 +52,6 @@ new_name_is_free(Old_Category, Old_Subcategory, New_Category, New_Subcategory):-
 ).
 
 
-% Comprueba que sea valido los argumentos
-arguments_rules(Category, Subcategory, Description, Percent):-
-    string(Description),
-    expenses_type(Category),
-    string(Subcategory),
-    number(Percent),
-    Subcategory \== "",
-    Description \== "",
-    Percent >= 0.
-
-
 % Metodo de actualizar Pregunta si los porcentajes son distintos si es asi calcula si es valido
 diferent_is_valid(New_Percent, Old_Percent):-
     New_Percent \== Old_Percent,
@@ -57,8 +60,3 @@ diferent_is_valid(New_Percent, Old_Percent):-
 
 diferent_is_valid(New_Percent, Old_Percent):-
     New_Percent == Old_Percent.
-
-
-% Saca la lista de las subcategorias
-subcategory_list(Subcategory_list):-
-    findall((Category, Subcategory), subcategory(Category, Subcategory, _), Subcategory_list).
