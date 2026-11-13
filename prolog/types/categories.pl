@@ -1,0 +1,14 @@
+%====================================================================================================================
+% KIND OF CATEGORIES
+%====================================================================================================================
+
+% GASTOS:
+expenses_type(necesidad).
+expenses_type(deseo).
+
+% INGRESOS
+income_type(salario).
+income_type(ingreso_extra).
+
+% CUENTA DE AHORRO:
+saving_account_type(global).
