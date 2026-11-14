@@ -1,32 +1,49 @@
-%===========================================================================================================================
+%=======================================================================================================================================================
 % OPERACIONES DE AHORROS
-%===========================================================================================================================
+%=======================================================================================================================================================
 :- ensure_loaded('../datos').
 :- ensure_loaded(income).
-:- ensure_loaded(auxiliary_methods).
+:- ensure_loaded(expenses).
+:- ensure_loaded('auxiliary methods/compare_with_lastmonth').
 
-% TOTAL DE AHORRO
-%Caso 1: Si el mes es enero, se compara con diciembre del año anterior
-%Caso 2: Si el mes es diferente a enero, se compara con el mes anterior
-dinero_restante(Year, Month, Total):-
-    findall(Monto, expenses(Year, Month, _, _, Monto, _), List_expenses),
-    findall(Monto, incomes(Year, Month, _, _, Monto, _), List_incomes),
+%======================================================================================================================================================
+% TOTAL AHORRADO
+%======================================================================================================================================================
 
-    sum_list(List_expenses, Expenses),
-    sum_list(List_incomes, Incomes),
-    Total is Incomes - Expenses.
+total_month_saving(Year, Month, Total):-
+    total_gastos(Year, Month, Expenses),
+    total_ingresos(Year, Month, Incomes),
+    findall(S, savings_adjustments(Year, Month, _, S), List_changes),
+    sum_list(List_changes, Change),
+    Total is Incomes - Expenses + Change.
 
-% Metodo principal para comparar el ahorro con el mes anterior
-compare_savings(Year, Month, Rest, Message):-
-    compare_savings_with_lastmonth(Year, Month, Rest, Message).
 
-% Operacion de ahorro
+%======================================================================================================================================================
+% CREAR Y ACTUALIZAR LOS AHORROS DE LOS MESES
+%======================================================================================================================================================
+
+save_saving(Year, Month):-
+    total_month_saving(Year, Month, Total),
+    assertz(month_saving(Year, Month, Total)).
+
+
+update_saving(Year, Month, Amount_change):-
+    month_saving(Year, Month, Old_Amount),
+    Change is Old_Amount + Amount_change,
+    retract(month_saving(Year, Month, Old_Amount)),
+    assertz(month_saving(Year, Month, Change)).
+
+
+%======================================================================================================================================================
+% DINERO AHORRADO CON RESPECTO AL MES ANTERIOR
+%======================================================================================================================================================
+
 operation_savings(Year, Last_year, Month,Last_month, Rest):-
-    dinero_restante(Year, Month, Current_rest),
-    dinero_restante(Last_year, Last_month, Last_rest),
+    total_month_saving(Year, Month, Current_rest),
+    total_month_saving(Last_year, Last_month, Last_rest),
     Rest is Current_rest - Last_rest.
 
-% LLamada por casos 
+
 compare_savings_with_lastmonth(Year, 1, Rest, Message):-
     LastMonth = 12,
     LastYear is Year - 1,
@@ -39,16 +56,19 @@ compare_savings_with_lastmonth(Year, Month, Rest, Message):-
     operation_savings(Year, Year, Month, LastMonth, Rest),
     compare_result(Rest, Message).
 
-% Porcentaje de ahorro
+
+compare_savings(Year, Month, Rest, Message):-
+    compare_savings_with_lastmonth(Year, Month, Rest, Message).
+
+
+%=======================================================================================================================================================
+% PORCENTAJE DE AHORRO
+%=======================================================================================================================================================
+
 porcentaje_ahorro(Year, Month, Porcentaje):-
     total_ingresos(Year, Month, Total),
-
-    Total > 0,
-    dinero_restante(Year, Month, Rest),
-    Porcentaje is (Rest / Total) * 100.
-
-% Porcentaje de ahorro 
-porcentaje_ahorro_total(Year, Month, Porcentaje):-
-    total_ingresos(Year, Month, Total),
-    Total = 0,
-    Porcentaje is 0.
+    (Total =:= 0
+    -> Porcentaje is 0.0
+    ;
+    total_month_saving(Year, Month, Rest),
+    Porcentaje is (Rest / Total) * 100).

@@ -1,24 +1,20 @@
-%=============================================================================
-% AUXILIARY METHODS
-%=============================================================================
-
-% Cambiar el mensaje
-:- ensure_loaded('../datos').
+:- ensure_loaded('../../datos').
 :- encoding(utf8).
 
-% Metodos auxiliares comparacion con los otros meses 
+%==========================================================================================================================
+% COMPARACION CON EL MES PASADO
+%==========================================================================================================================
 
-% Se usa para hacer las comparaciones con el mes anterior, ya sea de ingresos, gastos o ahorro
 compare_result(Rest, Message):-
     Rest > 0,
-    format(string(Mensaje), "Se ha aumentado con respecto al mes anterior", []),
+    format(string(Message), "Se ha aumentado con respecto al mes anterior", []).
 
 compare_result(Rest, Message):-
     Rest < 0,
-    format(string(Mensaje), "Se ha disminuido con respecto con el mes anterior", []),
+    format(string(Message), "Se ha disminuido con respecto con el mes anterior", []).
 
 compare_result(0, Message):-
-    format(string(Mensaje), "Se es lo mismo que el mes pasado", []),
+    format(string(Message), "Se es lo mismo que el mes pasado", []).
 
 compare_with_lastmonth(Table_1, Table_2, Year, 1, Rest, Message):- 
     LastMonth = 12,
