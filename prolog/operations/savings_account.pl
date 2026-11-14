@@ -71,9 +71,8 @@ update_global_account(Year, Month, Day):-
 
 % Funcion recursiva
 update_history_percent([], _, _, _, _).
-update_history_percent(List, Old_Category, Old_Subcategory, New_Category, New_Subcategory):-
-    pop(List, Rest, Year-Month-Day-Percent),
-    retract(savings_account_percent(Year, Month, Day, Old_Category, Old_Subcategory, Percent)),
+update_history_percent([Year-Month-Day-Percent | Rest], Old_Category, Old_Subcategory, New_Category, New_Subcategory):-
+    once(retract(savings_account_percent(Year, Month, Day, Old_Category, Old_Subcategory, Percent))),
     assertz(savings_account_percent(Year, Month, Day, New_Category, New_Subcategory, Percent)),
     update_history_percent(Rest, Old_Category, Old_Subcategory, New_Category, New_Subcategory).
     
