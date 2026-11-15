@@ -11,7 +11,8 @@
 %====================================================================================================================================
 exist_adjustment(Year, Month, Day, Amount, N):-
     findall((Year, Month, Day, Amount), savings_adjustments(Year, Month, Day, Amount), saving_adjustments),
-    length(saving_adjustments, N)
+    length(saving_adjustments, N),
+    1 =< N.
     
 %====================================================================================================================================
 % CREAR UN NUEVO CAMBIO
