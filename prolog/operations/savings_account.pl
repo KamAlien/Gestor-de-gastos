@@ -93,3 +93,13 @@ update_savings_account(Year, Month, Day, Old_Category, Old_Subcategory, New_Cate
     assertz(savings_account(
         New_Category, New_Subcategory,
         New_Description, New_Percent)).
+
+
+%================================================================================================================================================================================================
+% ELIMINAR CUENTAS DE AHORRO
+%================================================================================================================================================================================================
+
+delete_savings_account(Category, Subcategory):-
+    exist(Category, Subcategory),
+    retractall(savings_account_percent(_, _, _, Category, Subcategory, _)),
+    retract(savings_account(Category, Subcategory, _))
