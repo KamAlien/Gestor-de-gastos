@@ -30,13 +30,6 @@ adjustments_up_to(Year, Month, Total_adjustments):-
 % CUENTAS DE AHORRO EN PARTICULAR
 %==================================================================================================================================================================================
 
-% Existe la cuenta?
-exist(Category, Subcategory):-
-    findall( _, savings_account(Category, Subcategory, _, _), List),
-    length(List, N),
-    N == 1.
-
-
 % CUANTO DINERO TIENE TAL CUENTA DE AHORRO:
 saving_count_money(Category, Subcategory, Year, Month, Balance):-
     exist(Category, Subcategory),
@@ -99,7 +92,7 @@ update_savings_account(Year, Month, Day, Old_Category, Old_Subcategory, New_Cate
 % ELIMINAR CUENTAS DE AHORRO
 %================================================================================================================================================================================================
 
-delete_savings_account(Category, Subcategory):-
-    exist(Category, Subcategory),
+delete_savings_account(Year, Month, Day, Category, Subcategory):-
     retractall(savings_account_percent(_, _, _, Category, Subcategory, _)),
-    retract(savings_account(Category, Subcategory, _))
+    retract(savings_account(Category, Subcategory, _, _)),
+    update_global_account(Year, Month, Day).

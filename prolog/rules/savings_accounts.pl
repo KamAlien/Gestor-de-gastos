@@ -4,6 +4,7 @@
 
 :- ensure_loaded('../datos').
 :- ensure_loaded('operations/savings_accounts').
+:- ensure_loaded('operations/date').
 :- ensure_loaded('../types/categories').
 
 
@@ -27,3 +28,9 @@ valid_update_savings_account(Old_Category, Old_Subcategory, New_Category, New_Su
     new_name_is_free(Old_Category, Old_Subcategory, New_Category, New_Subcategory),
     Saving_Account = [(_, _, Old_Percent)],
     diferent_is_valid(New_Percent, Old_Percent).
+
+valid_delete_saving_account(Year, Month, Day, Category, Subcategory):-
+    valid_day(Year, Month, Day),
+    get_saving_account(Category, Subcategory, Saving_account),
+    exist_sb(Saving_account),
+    Category \== global.
