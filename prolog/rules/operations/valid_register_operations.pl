@@ -1,16 +1,6 @@
 %===========================================================================
 % VALIDAR QUE LAS OPERACIONES DE PONER INGRESOS, GASTOS O AJUSTAR AHORRO
 %===========================================================================
-
-% TIPOS DE INGRESO PERMITIDOS
-income_type(salario).
-income_type(ingreso_extra).
-
-% TIPOS DE GASTOS PERMITIDOS (CATEGORIAS)
-expenses_type(necesidad).
-expenses_type(deseo).
-
-
 %===========================================================================
 % FECHAS
 %===========================================================================
@@ -66,3 +56,8 @@ valid_incomes(Year, Month, Day, Description, Amount, Category):-
 valid_expenses(Year, Month, Day, Description, Amount, Category):-
     general_validation(Year, Month, Day, Description, Amount),
     expenses_type(Category).
+
+% VALIDAR UN CAMBIO EN EL AHORRO.
+valid_changes_saving(Year, Month, Day, Amount):-
+    number(Amount),
+    valid_day(Year, Month, Day).
