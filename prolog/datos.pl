@@ -52,3 +52,7 @@ savings_account(deseo, "viajes", "Viajes en vacaciones", 10).
 savings_account_percent(2026, 3, 2, global, "Cuenta de Ahorro global", 70).
 savings_account_percent(2026, 3, 2, necesidad, "hospital", 20).
 savings_account_percent(2026, 3, 2, deseo, "viajes", 10).
+
+% TRANSFERENCIAS DE DINERO
+:- dynamic transfer_money/8.
+transfer_money(2026, 3, 2, necesidad, "hospital", deseo, "viajes", 10).
