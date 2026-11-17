@@ -1,18 +1,24 @@
-%====================================================================================================
+%============================================================================================================================================================
 % SALDO DE UNA CUENTA DE AHORRO, POR TRAMOS
 % Un tramo va desde un porcentaje, empieza a regir hasta que empieza el siguiente
-%====================================================================================================
+%============================================================================================================================================================
 
 :- ensure_loaded('../../datos').
 :- ensure_loaded('list_auxiliaries_methods').
 :- ensure_loaded('../savings').
 
-% Un mes como un solo numero: asi comparar fechas es comparar numeros
+%============================================================================================================================================================
+% UN MES COMO UN SOLO NUMERO ASI AL COMPARAR FECHAS SE CONVIERTE EN COMPARAR NUMEROS
+%============================================================================================================================================================
+
 month_index(Year, Month, Index):-
     Index is Year * 12 + Month.
 
 
-% Lo que se ahorro entre 2 meses (como numeros): cuenta desde Start y no cuenta END
+%============================================================================================================================================================
+% LO QUE SE AHORRO ENTRE 2 MESES: CUENTA DESDE START Y NO CUENTA END
+%============================================================================================================================================================
+
 saving_between(Start, End, Saving):-
     Last is End -1,
     findall(S, (between(Start, Last, Index),
@@ -24,7 +30,10 @@ saving_between(Start, End, Saving):-
     sum_list(Savings, Saving).
 
 
-% Cambios de porcentaje de una cuenta hasta un mes, ordenados por fecha
+%============================================================================================================================================================
+% CAMBIOS DE PORCENTAJE DE UNA CUENTA HASTA UN MES, ORDENADOS POR FECHA
+%============================================================================================================================================================
+
 account_changes(Category, Subcategory, Year, Month, Changes):-
     month_index(Year, Month, Last),
     findall(Start-Percent,
@@ -35,7 +44,10 @@ account_changes(Category, Subcategory, Year, Month, Changes):-
     keysort(Unsorted, Changes).
 
 
-% Recorre los cambios. Se lleva el inicio y el porcentaje del tramo actual, y va armano la lista de lo que le toco a la cuenta en cada tramo
+%============================================================================================================================================================
+% RECORRE LOS CAMBIOS. SE LLEVA EL INICIO Y EL PORCENTAJE DEL TRAMO ACTUAL Y VA ARMANDO LA LISTA DE LO QUE LE TOCO A LA CUENTA EN CADA TRAMO
+%============================================================================================================================================================
+
 tramos_share(Changes, Start, Percent, End, Shares):-
     ( Changes == []
     -> % Ya no quedan cambios es el ultimo tramo desde el ultimo cambio hasta la fecha actual 
@@ -50,7 +62,10 @@ tramos_share(Changes, Start, Percent, End, Shares):-
     Shares = [Share | Rest_shares]).
 
 
-% Saldo de una cuenta hasta un mes. Falla si la cuenta no existe
+%============================================================================================================================================================
+% SALDO DE LA CUENTA DE UN MES: FALLA SI LA CUENTA NO EXISTE
+%===============================================================================================================================================================
+
 savings_account_balance(Category, Subcategory, Year, Month, Balance):-
     once(savings_account_percent(_, _, _, Category, Subcategory, _)),
     account_changes(Category, Subcategory, Year, Month, Changes),
@@ -64,9 +79,9 @@ savings_account_balance(Category, Subcategory, Year, Month, Balance):-
     sum_list(Shares, Balance)).
 
 
-%====================================================================================================
+%============================================================================================================================================================
 % CALCULA EL PORCENTAJE TOTAL Y LO QUE SOBRE SE QUEDA EN LA CUENTA GLOBAL
-%====================================================================================================
+%============================================================================================================================================================
 
 sum_percent(Total_Percent):-
     findall(Percent, (savings_account(Category, _, _, Percent), Category \== global), List_Percent),

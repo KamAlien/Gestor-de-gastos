@@ -5,6 +5,7 @@
 :- ensure_loaded('auxiliary methods/calendar').
 :- ensure_loaded('auxiliary methods/list_auxiliaries_methods').
 :- ensure_loaded('auxiliary methods/account_balance').
+:- ensure_loaded('../rules/operations').
 
 %====================================================================================================================================================================================
 % CALCULA EL LA CANTIDAD TOTAL DE DINERO HASTA EL MES ACTUAL YA SEA DE GASTOS O INGRESOS
@@ -49,8 +50,8 @@ create_saving_account(Category, Subcategory, Description, Percent, Year, Month, 
 
 % Actualizar la cuenta global:
 update_global_account(Year, Month, Day):-
-    sum_percent(Total_Percent),
-    New_Percent is 100 - Total_Percent,
+    sum_savings_account_percent(0, Total_percents),
+    New_Percent is 100 - Total_percents,
     update_savings_account(
         Year,
         Month,
