@@ -52,3 +52,10 @@ savings_account(deseo, "viajes", "Viajes en vacaciones", 10).
 savings_account_percent(2026, 3, 2, global, "Cuenta de Ahorro global", 70).
 savings_account_percent(2026, 3, 2, necesidad, "hospital", 20).
 savings_account_percent(2026, 3, 2, deseo, "viajes", 10).
+
+% AJUSTES PARA EL PORCENTAJE DE LAS CATEGORIAS Y EL AHORRO
+:- dynamic change_category_percent.
+change_category_percent(2026, 3, 3, necesidad, 50).
+change_category_percent(2026, 3, 3, deseo, 30).
+change_category_percent(2026, 3, 3, ahorro, 20).
+
