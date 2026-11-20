@@ -4,7 +4,7 @@
 
 :- ensure_loaded('../datos').
 :- ensure_loaded('operations/savings_accounts').
-:- ensure_loaded('../types/categories').
+:- ensure_loaded('../types/types_categories').
 
 
 %================================================================================================================================================
