@@ -2,15 +2,6 @@
 % VALIDAR QUE LAS OPERACIONES DE PONER INGRESOS, GASTOS O AJUSTAR AHORRO
 %===========================================================================
 
-% TIPOS DE INGRESO PERMITIDOS
-income_type(salario).
-income_type(ingreso_extra).
-
-% TIPOS DE GASTOS PERMITIDOS (CATEGORIAS)
-expenses_type(necesidad).
-expenses_type(deseo).
-
-
 %===========================================================================
 % FECHAS
 %===========================================================================
