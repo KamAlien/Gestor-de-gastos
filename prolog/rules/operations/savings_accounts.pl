@@ -4,7 +4,9 @@
 :- ensure_loaded('../../types/types_categories').
 
 
-% Comprueba que sea valido los argumentos
+%=================================================================================================================================================================================================================================================================================================================================
+% VALIDAR PARAMETROS
+%=================================================================================================================================================================================================================================================================================================================================
 arguments_rules(Category, Subcategory, Description, Percent):-
     string(Description),
     expenses_type(Category),
@@ -17,12 +19,27 @@ arguments_rules(Category, Subcategory, Description, Percent):-
     Percent >= 0.
 
 
-% Preguntar por una cuenta de ahorro
+%=================================================================================================================================================================================================================================================================================================================================
+% OBTENER UNA CUENTA DE AHORRO Y PREGUNTAR SI EXISTE O NO 
+%=================================================================================================================================================================================================================================================================================================================================
+
 get_saving_account(Category, Subcategory, Saving_account):-
     findall((Category, Subcategory, Percent), savings_account(Category, Subcategory, _, Percent), Saving_account).
 
 
-% Calcula la suma de los porcentajes de las cuentas para una cuenta nueva
+% Pregunta si la subcategoria existe
+not_exist_sb(List):-
+    length(List, N),
+    N == 0.
+
+exist_sb(List):-
+    length(List, N),
+    N == 1.
+
+
+%===========================================================================================================================
+% CALCULA LA SUMA DE LOS PORCENTAJES DE LAS CUENTAS PARA UNA CUENTA NUEVA
+%===========================================================================================================================
 sum_savings_account_percent(Percent, Total_percents):-
     findall(Percents, (savings_account(Category , _, _, Percents), Category \== global), List_percent),
     sum_list(List_percent, Total_percent),
@@ -31,18 +48,9 @@ sum_savings_account_percent(Percent, Total_percents):-
     Total_percents = Is_valid.
 
 
-% Pregunta si la subcategoria existe
-not_exist_sb(List):-
-    length(List, N),
-    N == 0.
-
-
-exist_sb(List):-
-    length(List, N),
-    N == 1.
-
-
-% El nombre nuevo sirve si es el mismo de antes o si todavia no existe
+%===========================================================================================================================
+% EL NOMBRE NUEVO SIRVE SI ES EL MISMO DE ANTES O SI TODAVIA NO EXISTE
+%===========================================================================================================================
 new_name_is_free(Old_Category, Old_Subcategory, New_Category, New_Subcategory):-
     (   Old_Category == New_Category,
         Old_Subcategory == New_Subcategory
@@ -51,12 +59,13 @@ new_name_is_free(Old_Category, Old_Subcategory, New_Category, New_Subcategory):-
     not_exist_sb(New_account)
 ).
 
-
-% Metodo de actualizar Pregunta si los porcentajes son distintos si es asi calcula si es valido
+%===========================================================================================================================
+% MÉTODO DE ACTUALIZAR. PREGUNTA SI LOS PORCENTAJES SON DISTINTOS; SI ES ASÍ, CALCULA SI ES VÁLIDO.
+%===========================================================================================================================
 diferent_is_valid(New_Percent, Old_Percent):-
-    New_Percent \== Old_Percent,
+    New_Percent =\= Old_Percent, !,
     Percent is New_Percent - Old_Percent,
     sum_savings_account_percent(Percent, _).
 
 diferent_is_valid(New_Percent, Old_Percent):-
-    New_Percent == Old_Percent.
+    New_Percent =:= Old_Percent.
