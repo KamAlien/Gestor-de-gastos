@@ -28,16 +28,6 @@ savings_adjustments(2026, 3, 7, 200).
 savings_adjustments(2026, 3, 8, -100).
 
 
-% AHORRO POR MESES:
-:- dynamic month_saving/3.
-
-month_saving(2026, 3, 100).
-month_saving(2026, 4, 200).
-month_saving(2026, 5, 100).
-month_saving(2026, 6, 5).
-
-
-
 % CUENTAS DE AHORRO (LA SUBCATEGORIA PARA GASTOS ES OPCIONAL) 
 % CATEGORIA, SUBCATEGORIA, DESCRIPCION, PORCENTAJE DE AHORRO DEL MES
 :- dynamic savings_account/4.
