@@ -63,9 +63,9 @@ new_name_is_free(Old_Category, Old_Subcategory, New_Category, New_Subcategory):-
 % MÉTODO DE ACTUALIZAR. PREGUNTA SI LOS PORCENTAJES SON DISTINTOS; SI ES ASÍ, CALCULA SI ES VÁLIDO.
 %===========================================================================================================================
 diferent_is_valid(New_Percent, Old_Percent):-
-    New_Percent \== Old_Percent,
+    New_Percent =\= Old_Percent, !,
     Percent is New_Percent - Old_Percent,
     sum_savings_account_percent(Percent, _).
 
 diferent_is_valid(New_Percent, Old_Percent):-
-    New_Percent == Old_Percent.
+    New_Percent =:= Old_Percent.
