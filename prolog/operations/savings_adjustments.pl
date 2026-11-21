@@ -3,31 +3,28 @@
 %===================================================================================================================================
 :- ensure_loaded('../datos').
 :- ensure_loaded('auxiliary methods/historial').
-:- ensure_loaded('auxiliary methods/list_auxiliaries_methods')
+:- ensure_loaded('auxiliary methods/list_auxiliaries_methods').
 :- ensure_loaded('savings').
 
 %====================================================================================================================================
 %  EXISTE EL AJUSTE?
 %====================================================================================================================================
 exist_adjustment(Year, Month, Day, Amount, N):-
-    findall((Year, Month, Day, Amount), savings_adjustments(Year, Month, Day, Amount), saving_adjustments),
-    length(saving_adjustments, N),
+    findall((Year, Month, Day, Amount), savings_adjustments(Year, Month, Day, Amount), Saving_adjustments),
+    length(Saving_adjustments, N),
     1 =< N.
     
 %====================================================================================================================================
 % CREAR UN NUEVO CAMBIO
 %====================================================================================================================================
 change_saving(Year, Month, Day, Amount):-
-    update_saving(Year, Month, Amount),
     assert(savings_adjustments(Year, Month, Day, Amount)).
 
 %====================================================================================================================================
 % ELIMINAR UN CAMBIO
 %====================================================================================================================================
 delete_savings_adjustments(Year, Month, Day, Amount):-
-    retract(savings_adjustments(Year, Month, Day, Amount)),
-    Amount_Change is Amount * (-1),
-    update_saving(Year, Month, Amount_Change).
+    once(retract(savings_adjustments(Year, Month, Day, Amount))).
 
 %====================================================================================================================================
 % HISTORIALES
