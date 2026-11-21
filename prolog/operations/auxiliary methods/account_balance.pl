@@ -72,11 +72,23 @@ savings_account_balance(Category, Subcategory, Year, Month, Balance):-
     month_index(Year, Month, Last),
     End is Last + 1,
     (Changes == []
-    -> Balance = 0
+    -> Share = 0
     ;
     pop(Changes, Rest, First_start-First_percent),
     tramos_share(Rest, First_start, First_percent, End, Shares),
-    sum_list(Shares, Balance)).
+    sum_list(Shares, Share)),
+    net_transfers(Category, Subcategory, Last, Net),
+    Balance is Share + Net.
+
+net_transfers(Category, Subcategory, Last, Net):-
+    findall(In_amount, (transfer_money(In_year, In_month, _, _, _, Category, Subcategory, In_amount),
+    month_index(In_year, In_month, In_index), In_index =< Last),
+    Received_list),
+    findall(Out_amount, (transfer_money(Out_year, Out_month, _, Category, Subcategory, _, _, Out_amount),
+    month_index(Out_year, Out_month, Out_index), Out_index =< Last), Sent_List),
+    sum_list(Received_list, Received),
+    sum_list(Sent_List, Sent),
+    Net is Received - Sent.
 
 
 %============================================================================================================================================================
