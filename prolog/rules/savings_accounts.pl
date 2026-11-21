@@ -4,8 +4,8 @@
 
 :- ensure_loaded('../datos').
 :- ensure_loaded('operations/savings_accounts').
+:- ensure_loaded('../types/types_categories').
 :- ensure_loaded('operations/date').
-:- ensure_loaded('../types/categories').
 :- ensure_loaded('../operations/auxiliary methods/account_balance').
 
 
