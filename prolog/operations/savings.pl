@@ -17,23 +17,6 @@ total_month_saving(Year, Month, Total):-
     sum_list(List_changes, Change),
     Total is Incomes - Expenses + Change.
 
-
-%======================================================================================================================================================
-% CREAR Y ACTUALIZAR LOS AHORROS DE LOS MESES
-%======================================================================================================================================================
-
-save_saving(Year, Month):-
-    total_month_saving(Year, Month, Total),
-    assertz(month_saving(Year, Month, Total)).
-
-
-update_saving(Year, Month, Amount_change):-
-    month_saving(Year, Month, Old_Amount),
-    Change is Old_Amount + Amount_change,
-    retract(month_saving(Year, Month, Old_Amount)),
-    assertz(month_saving(Year, Month, Change)).
-
-
 %======================================================================================================================================================
 % DINERO AHORRADO CON RESPECTO AL MES ANTERIOR
 %======================================================================================================================================================

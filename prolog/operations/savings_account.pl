@@ -5,6 +5,7 @@
 :- ensure_loaded('auxiliary methods/calendar').
 :- ensure_loaded('auxiliary methods/list_auxiliaries_methods').
 :- ensure_loaded('auxiliary methods/account_balance').
+:- ensure_loaded('../rules/operations/savings_accounts').
 
 %====================================================================================================================================================================================
 % CALCULA EL LA CANTIDAD TOTAL DE DINERO HASTA EL MES ACTUAL YA SEA DE GASTOS O INGRESOS
@@ -27,29 +28,22 @@ adjustments_up_to(Year, Month, Total_adjustments):-
 
 
 %==================================================================================================================================================================================
-% CUENTAS DE AHORRO EN PARTICULAR
+% % CUANTO DINERO TIENE UNA CUENTA DE AHORRO:
 %==================================================================================================================================================================================
-
-% Existe la cuenta?
-exist(Category, Subcategory):-
-    findall( _, savings_account(Category, Subcategory, _, _), List),
-    length(List, N),
-    N == 1.
-
 
 % CUANTO DINERO TIENE TAL CUENTA DE AHORRO:
 saving_count_money(Category, Subcategory, Year, Month, Balance):-
-    exist(Category, Subcategory),
+    once(savings_account(Category, Subcategory, _, _)),
     savings_account_balance(Category, Subcategory, Year, Month, Balance).
 
 %===================================================================================================================================================================================
 % CREAR UNA CUENTA DE AHORRO
 %===================================================================================================================================================================================
 
-create_saving_account(Category, Subcategory, Description, Percent, Year, Month, Day):-
+create_saving_account( Year, Month, Day, Category, Subcategory, Description, Percent):-
     assertz(savings_account(Category, Subcategory, Description, Percent)),
-    assertz(savings_account_percent(Year, Month, Day, Category, Subcategory, Percent)).
-
+    assertz(savings_account_percent(Year, Month, Day, Category, Subcategory, Percent)),
+    update_global_account(Year, Month, Day).
 %===================================================================================================================================================================================
 % ACTUALIZAR CUENTAS
 %===================================================================================================================================================================================
@@ -87,9 +81,28 @@ update_savings_account(Year, Month, Day, Old_Category, Old_Subcategory, New_Cate
     ;
     true
     ),
-    retract(savings_account(
-            Old_Category, Old_Subcategory, _, _)),
+    once(retract(savings_account(Old_Category, Old_Subcategory, _, _))),
+    assertz(savings_account(New_Category, New_Subcategory, New_Description, New_Percent)),
+    ( Old_Category == global
+    -> true
+    ;
+    update_global_account(Year, Month, Day)
+    ).
+    
 
-    assertz(savings_account(
-        New_Category, New_Subcategory,
-        New_Description, New_Percent)).
+
+%================================================================================================================================================================================================
+% ELIMINAR CUENTAS DE AHORRO
+%================================================================================================================================================================================================
+
+delete_savings_account(Year, Month, Day, Category, Subcategory):-
+    retractall(savings_account_percent(_, _, _, Category, Subcategory, _)),
+    retract(savings_account(Category, Subcategory, _, _)),
+    update_global_account(Year, Month, Day).
+
+%================================================================================================================================================================================================
+% TRANFERIR DINERO DE UNA CUENTA DE AHORRO A OTRA CUENTA DE AHORRO
+%================================================================================================================================================================================================
+
+save_transfer(Year, Month, Day, Category_Origin, Subcategory_Origin, Category_Destiny, Subcategory_Destiny, Amount):-
+    assertz(transfer_money(Year, Month, Day, Category_Origin, Subcategory_Origin,  Category_Destiny, Subcategory_Destiny, Amount)).
