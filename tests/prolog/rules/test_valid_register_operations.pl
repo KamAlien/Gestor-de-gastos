@@ -1,9 +1,8 @@
-%=================================================================================================================================================
-% TESTS DE LAS VALIDACIONES DE REGISTRO (prolog/rules/valid_register_operations.pl)
-% Correr desde la carpeta del proyecto:
-%   swipl -g run_tests -t halt tests/prolog/rules/test_valid_register_operations.pl
-%=================================================================================================================================================
-:- use_module(library(plunit)).
+:- encoding(utf8).
+%=========================================================================================
+% PRUEBAS DE prolog/rules/valid_register_operations.pl
+% (supone: valid_day/3 valida fechas reales; income_type/1 e expenses_type/1 definen las categorias)
+%=========================================================================================
 :- ensure_loaded('../../../prolog/rules/valid_register_operations').
 
 %--------------------------------------------------------------------------
