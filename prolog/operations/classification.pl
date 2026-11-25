@@ -41,7 +41,7 @@ categories_by_general(General, Categories):-
 
 %=========================================================================================================================
 % DECIDE (exceptions, texts, generals): the clauses cover every case and each one ends with a cut
-%========================================================================================================================
+%=========================================================================================================================
 decide([Category], _, _, Category):- !.
 decide([_, _ | _], _, _, Category):- !, fallback_category(Category).
 decide([], [Category], _, Category):- !.
@@ -50,3 +50,16 @@ decide([], [], [Category | _], Category):- !.
 decide([], _, [], Category):- fallback_category(Category).
 
 fallback_category(Category):- once(default_category(Category)).
+
+
+%=========================================================================================================================
+% Actualiza las reglas cuando se cambia el nombre de las categorias
+%=========================================================================================================================
+rename_category_in_rules(Old, New):-
+    ground(Old), ground(New), Old \== New,
+    forall( retract(text_rule(Hint, Old)),
+            assertz(text_rule(Hint, New))),
+    forall( retract(context_exception(Word, Context, Old)),
+            assertz(context_exception(Word, Context, New))),
+    forall(retract(general_description_category(Description, Old)),
+            assertz(general_description_category(Description, New))).
