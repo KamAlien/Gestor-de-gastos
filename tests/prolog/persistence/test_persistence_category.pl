@@ -1,131 +1,57 @@
 :- encoding(utf8).
 %=========================================================================================
-% PRUEBAS DE GUARDAR Y CARGAR (prolog/operations/persistence/persistence_categories.pl)
-% Siempre con archivos temporales: nunca se toca data/categories.pl real.
+% TESTS DE persistence_categories.pl
 %=========================================================================================
 :- use_module(library(plunit)).
-:- ensure_loaded('../../helpers').
+:- ensure_loaded('../../helpers_persistence').
+:- ensure_loaded('../../../prolog/operations/persistence/persistence_categories').
 
-:- begin_tests(persistencia, [setup(backup), cleanup(restore)]).
+% datos de prueba (fuera de los tests)
+cat_sample([categories(necesidad, S, 50),
+    categories(deseo, "Ocio", 30),
+    categories(ahorro, "Ahorro", 20)]) :- pf_special(S).
+cat_old([categories(deseo, "Otra", 100)]).
 
-test(guardar_y_cargar_devuelve_lo_mismo, [setup(fx)]) :-
-    tmp_file(categorias, File),
-    findall(C-D-P, categories(C, D, P), Antes),
-    save_categories(File),
-    clear_categories,
-    load_categories(File),
-    findall(C-D-P, categories(C, D, P), Despues),
-    delete_file(File),
-    Antes == Despues.
+:- begin_tests(persistence_categories, [setup(pf_setup([categories/3])), cleanup(pf_cleanup([categories/3]))]).
 
-test(las_descripciones_siguen_siendo_cadenas, [setup(fx)]) :-
-    tmp_file(categorias, File),
-    save_categories(File),
-    clear_categories,
-    load_categories(File),
-    delete_file(File),
-    categories(deseo, Description, _),
-    string(Description).
+test(round_trip) :-
+    cat_sample(Samples),
+    pf_round_trip(save_categories, load_categories, categories/3, Samples).
 
-test(acentos_y_enie_sobreviven, [setup(fx)]) :-
-    clear_categories,
-    add_category(educacion, "Educación y años de estudio", 100),
-    tmp_file(categorias, File),
-    save_categories(File),
-    clear_categories,
-    load_categories(File),
-    delete_file(File),
-    categories(educacion, "Educación y años de estudio", 100).
+test(file_has_one_clause_per_fact) :-
+    cat_sample(Samples),
+    pf_file_content(save_categories, categories/3, Samples).
 
-test(cargar_no_duplica, [setup(fx)]) :-
-    tmp_file(categorias, File),
-    save_categories(File),
-    load_categories(File),
-    load_categories(File),
-    delete_file(File),
-    aggregate_all(count, categories(_, _, _), 3).
+test(load_replaces_memory) :-
+    cat_old(Old), cat_sample(New),
+    pf_load_replaces(load_categories, categories/3, Old, New).
 
-test(archivo_inexistente_no_borra_la_memoria, [setup(fx)]) :-
-    tmp_file(no_existe, File),
-    load_categories(File),
-    aggregate_all(count, categories(_, _, _), 3).
+test(missing_file_keeps_memory) :-
+    cat_sample(Samples),
+    pf_missing_file_keeps(load_categories, categories/3, Samples).
 
-test(archivo_con_basura_se_ignora, [setup(fx)]) :-
-    tmp_file(categorias, File),
-    setup_call_cleanup(
-        open(File, write, S),
-        ( portray_clause(S, categories(salud, "Salud", 100)),
-          portray_clause(S, otra_cosa(1, 2)) ),
-        close(S)),
-    load_categories(File),
-    delete_file(File),
-    categories(salud, "Salud", 100),
-    \+ current_predicate(user:otra_cosa/2),
-    aggregate_all(count, categories(_, _, _), 1).
+test(ignores_other_terms) :-
+    cat_sample(Samples),
+    pf_ignores_other_terms(load_categories, categories/3, Samples).
 
-:- end_tests(persistencia).
+test(broken_file_keeps_memory) :-
+    cat_sample(Samples),
+    pf_broken_file_keeps(load_categories, categories/3, Samples).
 
-:- begin_tests(persistencia_defecto, [setup(backup), cleanup(restore)]).
+test(empty_memory_gives_empty_file) :-
+    cat_sample(Samples),
+    pf_empty_memory(save_categories, load_categories, categories/3, Samples).
 
-test(ruta_por_defecto_es_data_categories) :-
-    nb_getval(backup_files, [File]),
-    File == 'data/categories.pl'.
+test(creates_missing_directory) :-
+    cat_sample(Samples),
+    pf_creates_directory(save_categories, categories/3, Samples).
 
-test(save_y_load_sin_argumentos, [setup(fx)]) :-
-    tmp_file(categorias, File),
-    set_categories_file(File),
-    save_categories,
-    clear_categories,
-    load_categories,
-    delete_file(File),
-    aggregate_all(count, categories(_, _, _), 3),
-    categories(deseo, "Gastos de ocio", 30).
+test(written_as_utf8) :-
+    cat_sample(Samples),
+    pf_written_as_utf8(save_categories, categories/3, Samples).
 
-test(load_sin_argumentos_y_sin_archivo_no_borra, [setup(fx)]) :-
-    tmp_file(no_existe, File),
-    set_categories_file(File),
-    load_categories,
-    aggregate_all(count, categories(_, _, _), 3).
+test(default_file_round_trip) :-
+    cat_sample(Samples),
+    pf_default_file(categories_file, save_categories, load_categories, categories/3, Samples).
 
-test(guardar_sin_categorias_crea_archivo_vacio, [setup(fx)]) :-
-    clear_categories,
-    tmp_file(categorias, File),
-    save_categories(File),
-    size_file(File, Size),
-    delete_file(File),
-    Size =:= 0.
-
-test(read_terms_lee_todo, [true(Ts == [a(1), "dos", tres])]) :-
-    tmp_file(terminos, File),
-    setup_call_cleanup(open(File, write, S),
-                       ( portray_clause(S, a(1)), portray_clause(S, "dos"), portray_clause(S, tres) ),
-                       close(S)),
-    setup_call_cleanup(open(File, read, In), read_terms(In, Ts), close(In)),
-    delete_file(File).
-
-test(read_terms_archivo_vacio, [true(Ts == [])]) :-
-    tmp_file(vacio, File),
-    setup_call_cleanup(open(File, write, S), true, close(S)),
-    setup_call_cleanup(open(File, read, In), read_terms(In, Ts), close(In)),
-    delete_file(File).
-
-:- end_tests(persistencia_defecto).
-
-:- begin_tests(persistencia_integracion, [setup(backup), cleanup(restore)]).
-
-test(guardar_y_recuperar_despues_de_cambios, [setup(fx)]) :-
-    clear_categories,
-    add_category(necesidad, "Gastos esenciales", 60),
-    add_category(deseo, "Gastos de ocio", 25),
-    add_category(ahorro, "Lo que se ahorra", 15),
-    add_category(salud, "Gastos de salud", 0),
-    tmp_file(categorias, File),
-    save_categories(File),
-    clear_categories,
-    load_categories(File),
-    delete_file(File),
-    categories(necesidad, _, 60),
-    categories(salud, "Gastos de salud", 0),
-    percents(Ps), sum_list(Ps, 100).
-
-:- end_tests(persistencia_integracion).
+:- end_tests(persistence_categories).

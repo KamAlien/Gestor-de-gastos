@@ -89,12 +89,12 @@ test(income_types, all(T == [salario, ingreso_extra])) :- income_type(T).
 %--------------------------------------------------------------------------
 :- begin_tests(valid_expenses).
 
-test(necesidad)                        :- valid_expenses(2026, 3, 2, "Super mercado", 200, necesidad).
-test(deseo)                            :- valid_expenses(2026, 3, 3, "Restaurante", 500, deseo).
-test(unknown_type, [fail])             :- valid_expenses(2026, 3, 9, "Cine", 50, foo).
-test(income_type_not_allowed, [fail])  :- valid_expenses(2026, 3, 9, "Cine", 50, salario).
-test(bad_date, [fail])                 :- valid_expenses(2026, 2, 29, "Cine", 50, deseo).
-test(leap_date, [nondet])              :- valid_expenses(2028, 2, 29, "Cine", 50, deseo).
+test(necesidad)                        :- valid_expenses(2026, 3, 2, "Super mercado", 200, necesidad, "Super mercado").
+test(deseo)                            :- valid_expenses(2026, 3, 3, "Restaurante", 500, deseo, "Restaurante").
+test(unknown_type, [fail])             :- valid_expenses(2026, 3, 9, "Cine", 50, foo, "foo").
+test(income_type_not_allowed, [fail])  :- valid_expenses(2026, 3, 9, "Cine", 50, salario, "Aguacate").
+test(bad_date, [fail])                 :- valid_expenses(2026, 2, 29, "Cine", 50, deseo, "Cine").
+test(leap_date, [nondet])              :- valid_expenses(2028, 2, 29, "Cine", 50, deseo, "Cine").
 test(expense_types, all(T == [necesidad, deseo])) :- expenses_type(T).
 
 :- end_tests(valid_expenses).

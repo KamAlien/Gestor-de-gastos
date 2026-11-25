@@ -1,7 +1,10 @@
 :- encoding(utf8).
 %=========================================================================================
 % TESTS FOR prolog/operations/classification.pl
+% classify_expense/3 (con datos conocidos y con tus datos por defecto) y rename_category_in_rules/2
+% Reemplaza al test_classification.pl anterior (ya incluye lo de renombrar).
 %=========================================================================================
+:- ensure_loaded('../../helpers_persistence').
 :- ensure_loaded('../../helpers_classification').
 :- ensure_loaded('../../../prolog/operations/classification').
 
@@ -124,3 +127,88 @@ test(food_at_a_restaurant, true(C == deseo)) :- classify_expense("Comida en el r
 test(unknown, true(C == pendiente)) :- classify_expense("Cosa rara", "otros", C).
 
 :- end_tests(operations_classification_default_data).
+
+%=========================================================================================
+% rename_category_in_rules/2
+%=========================================================================================
+rr_hints(Name/Arity, Hints) :-
+    functor(Head, Name, Arity),
+    findall(First, ( Head, arg(1, Head, First) ), List),
+    msort(List, Hints).
+
+:- begin_tests(rename_category_in_rules, [setup(cl_backup), cleanup(cl_restore)]).
+
+test(renames_the_text_rules, [setup(cl_fixture)]) :-
+    rename_category_in_rules(deseo, capricho),
+    pf_facts(text_rule/2, L), msort(L, S),
+    S == [ text_rule("cine", capricho), text_rule("comida", necesidad), text_rule("pan", necesidad),
+           text_rule("pizza", capricho), text_rule("zapato", capricho) ].
+
+test(renames_the_context_exceptions, [setup(cl_fixture)]) :-
+    rename_category_in_rules(deseo, capricho),
+    pf_facts(context_exception/3, L), msort(L, S),
+    S == [ context_exception("hospital", "estetica", capricho),
+           context_exception("hospital", "urgencia", necesidad) ].
+
+test(renames_the_general_descriptions, [setup(cl_fixture)]) :-
+    rename_category_in_rules(deseo, capricho),
+    pf_facts(general_description_category/2, L), msort(L, S),
+    S == [ general_description_category("compras", capricho),
+           general_description_category("hospital", necesidad),
+           general_description_category("salidas", capricho),
+           general_description_category("super mercado", necesidad) ].
+
+test(the_old_name_disappears, [setup(cl_fixture)]) :-
+    rename_category_in_rules(deseo, capricho),
+    \+ text_rule(_, deseo),
+    \+ context_exception(_, _, deseo),
+    \+ general_description_category(_, deseo).
+
+test(keeps_the_number_of_rules_and_the_hints, [setup(cl_fixture)]) :-
+    rr_hints(text_rule/2, T0), rr_hints(context_exception/3, C0), rr_hints(general_description_category/2, G0),
+    rename_category_in_rules(necesidad, basico),
+    rr_hints(text_rule/2, T1), rr_hints(context_exception/3, C1), rr_hints(general_description_category/2, G1),
+    T0 == T1, C0 == C1, G0 == G1.
+
+test(other_categories_stay_the_same, [setup(cl_fixture)]) :-
+    rename_category_in_rules(necesidad, basico),
+    once(text_rule("cine", deseo)),
+    once(context_exception("hospital", "estetica", deseo)),
+    once(general_description_category("salidas", deseo)).
+
+test(default_category_is_not_touched, [setup(cl_fixture)]) :-
+    rename_category_in_rules(deseo, capricho),
+    pf_facts(default_category/1, L),
+    L == [default_category(pendiente)].
+
+test(a_category_without_rules_changes_nothing, [setup(cl_fixture)]) :-
+    pf_facts(text_rule/2, T0), pf_facts(context_exception/3, C0),
+    rename_category_in_rules(viajes, otro),
+    pf_facts(text_rule/2, T1), pf_facts(context_exception/3, C1),
+    T0 == T1, C0 == C1.
+
+test(the_classifier_uses_the_new_name, [setup(cl_fixture), nondet]) :-
+    rename_category_in_rules(deseo, capricho),
+    classify_expense("Cine con amigos", "otros", Category),
+    Category == capricho.
+
+test(is_deterministic, [setup(cl_fixture)]) :-
+    findall(x, rename_category_in_rules(deseo, capricho), L),
+    L == [x].
+
+test(fails_if_old_and_new_are_equal, [fail, setup(cl_fixture)]) :-
+    rename_category_in_rules(deseo, deseo).
+
+test(fails_with_an_unbound_old_name, [fail, setup(cl_fixture)]) :-
+    rename_category_in_rules(_, capricho).
+
+test(fails_with_an_unbound_new_name, [fail, setup(cl_fixture)]) :-
+    rename_category_in_rules(deseo, _).
+
+test(failing_does_not_change_the_rules, [setup(cl_fixture)]) :-
+    pf_facts(text_rule/2, T0),
+    \+ rename_category_in_rules(_, capricho),
+    pf_facts(text_rule/2, T1),
+    T0 == T1.
+
+:- end_tests(rename_category_in_rules).
