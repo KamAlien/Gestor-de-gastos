@@ -1,33 +1,36 @@
-%================================================================================================
-% GUARDAR Y CARGAR DATOS (archivos de la carpeta datos)
-%================================================================================================
-
+:- encoding(utf8).
+%======================================================================================================================
+% GUARDAR Y CARGAR DATOS
+%======================================================================================================================
 :- ensure_loaded('../../datos').
+:- ensure_loaded(persistence_common).
 
-% GASTOS: archivo donde se guardan 
+:- dynamic expenses_file/1.
 expenses_file('data/expenses.pl').
 
-% GUARDAR: escribe cada gasto que hay en memoria en el archivo 
 save_expenses:-
     expenses_file(File),
-    open(File, write, Stream),
-    forall(expenses(Year, Month, Day, Description, Amount, Category),
-            portray_clause(Stream, expenses(Year, Month, Day, Description, Amount, Category))),
-    close(Stream).
+    save_expenses(File).
 
-% CARGAR: vacia la memoria y mete los gastos que estan en el archivo
+save_expenses(File):-
+    setup_and_call_cleanup(open(File, write, Stream, [encoding(utf8)]),
+    forall(expenses(Year, Month, Day, Description, Amount, Category, General),
+    portray_clause(Stream, expenses(Year, Month, Day, Description, Amount, Category, General))),
+    close(Stream)).
+
 load_expenses:-
     expenses_file(File),
-    retractall(expenses(_, _, _, _, _, _)),
-    open(File, read, Stream),
-    read_expenses(Stream),
-    close(Stream).
+    load_expenses(File).
 
-% Lee el archivo hecho por hecho hasta llegar al final
-read_expenses(Stream):-
-    read(Stream, Term),
-    (Term == end_of_file
-    -> true
-    ; assertz(Term),
-    read_expenses(Stream)
-    ).
+load_expenses(File):-
+    exists_file(File), !,
+    setup_call_cleanup(
+        open(File, read, Stream, [encoding(utf8)]),
+        read_terms(Stream, Terms),
+        close(Stream)),
+    retractall(expenses(_, _, _, _, _, _, _)),
+    forall(
+        member(expenses(Year, Month, Day, Description, Amount, Category, General), Terms),
+        assertz((expenses(Year, Month, Day, Description, Amount, Category, General)))
+        ).
+load_expenses(_).
