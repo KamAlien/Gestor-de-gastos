@@ -54,6 +54,8 @@ valid_incomes(Year, Month, Day, Description, Amount, Category):-
     income_type(Category).
 
 % VALIDAR EL REGISTRO DE GASTOS
-valid_expenses(Year, Month, Day, Description, Amount, Category):-
+valid_expenses(Year, Month, Day, Description, Amount, Category, General_Description):-
+    string(General_Description),
+    General_Description \== "",
     general_validation(Year, Month, Day, Description, Amount),
     expenses_type(Category).
