@@ -17,6 +17,8 @@
 % operaciones de las reglas
 :- ensure_loaded('prolog/rules/operations/test_savings_accounts').
 :- ensure_loaded('prolog/rules/operations/test_category').
+:- ensure_loaded('prolog/rules/operations/test_classification').
+
 
 % operaciones
 :- ensure_loaded('prolog/operations/test_user').
@@ -25,6 +27,10 @@
 :- ensure_loaded('prolog/operations/test_savings').
 :- ensure_loaded('prolog/operations/test_savings_adjustments').
 :- ensure_loaded('prolog/operations/test_categories').
+:- ensure_loaded('prolog/operations/test_classification').
 
 % persistence
 :- ensure_loaded('prolog/persistence/test_persistence_category').
+
+% settings
+:- ensure_loaded('prolog/confing/test_classification').
