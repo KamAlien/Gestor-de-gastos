@@ -21,9 +21,8 @@ valid_update_category(Old_Category, New_Category, New_Description):-
     valid_new_name(Old_Category, New_Category).
 
 valid_new_name(Same, Same):- !.
-valid_new_name(Old_Category, New_Category):-
-    category_not_exist(New_Category),
-    category_unused(Old_Category).
+valid_new_name(_, New_Category):-
+    category_not_exist(New_Category).
 
 valid_delete_category(Category):-
     category_exist(Category),

@@ -4,6 +4,7 @@
 :- ensure_loaded('../datos').
 :- ensure_loaded('auxiliary methods/compare_with_lastmonth').
 :- ensure_loaded('auxiliary methods/historial').
+:- ensure_loaded('../rules/valid_register_operations').
 
 %===========================================================================================================================
 % TOTAL DE INGRESO POR TIPO
@@ -58,3 +59,17 @@ historial_income_days_by_category(Year, Month, Category, Message):-
 historial_income_days_with_data(Year, Month, Message):-
     months_or_days_with_data(Year, Month, _, incomes, Sorteddays),
     format(string(Message), "Historial de ingresos: ~w", [Sorteddays]).
+
+%===========================================================================================================================
+% CREAR Y ELIMINAR UN INGRESO
+%===========================================================================================================================
+create_incomes(Year, Month, Day, Description, Amount, Type):-
+    ground(incomes(Year, Month, Day, Description, Amount, Type)),
+    valid_incomes(Year, Month, Day, Description, Amount, Type),
+    assertz(incomes(Year, Month, Day, Description, Amount, Type)),
+    save_incomes.
+
+delete_incomes(Year, Month, Day, Description, Amount, Type):-
+    ground(incomes(Year, Month, Day, Description, Amount, Type)),
+    once(retract(incomes(Year, Month, Day, Description, Amount, Type))),
+    save_incomes.

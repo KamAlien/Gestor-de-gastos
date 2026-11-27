@@ -1,51 +1,97 @@
-:- encoding(utf8).
-%=========================================================================================
-% PRUEBAS DE prolog/rules/operations/category.pl
-% Solo este archivo: valid_arguments, valid_update_arguments, category_exist,
-% category_not_exist y category_unused. Son consultas: no modifican nada.
-%=========================================================================================
 :- use_module(library(plunit)).
-:- ensure_loaded('../../../helpers').
 :- ensure_loaded('../../../../prolog/rules/operations/category').
 
-:- begin_tests(regla_valid_arguments, [setup(backup), cleanup(restore)]).
+:- dynamic cu_saved/1.
 
-test(ok)                          :- valid_arguments(salud, "Gastos de salud").
-test(nombre_vacio, fail)          :- valid_arguments('', "algo").
-test(nombre_no_atomo, fail)       :- valid_arguments("salud", "algo").
-test(nombre_libre, fail)          :- valid_arguments(_, "algo").
-test(descripcion_vacia, fail)     :- valid_arguments(salud, "").
-test(descripcion_no_cadena, fail) :- valid_arguments(salud, algo).
-test(descripcion_libre, fail)     :- valid_arguments(salud, _).
+cu_save :-
+    retractall(cu_saved(_)),
+    forall(expenses(A,B,C,D,E,F,G),
+           assertz(cu_saved(expenses(A,B,C,D,E,F,G)))),
+    forall(categories(X,Y,Z),
+           assertz(cu_saved(categories(X,Y,Z)))),
+    forall(context_exception(P,Q,R),
+           assertz(cu_saved(context_exception(P,Q,R)))),
+    forall(text_rule(H,K),
+           assertz(cu_saved(text_rule(H,K)))),
+    forall(general_description_category(M,N),
+           assertz(cu_saved(general_description_category(M,N)))).
 
-:- end_tests(regla_valid_arguments).
+cu_clear :-
+    retractall(expenses(_,_,_,_,_,_,_)),
+    retractall(categories(_,_,_)),
+    retractall(context_exception(_,_,_)),
+    retractall(text_rule(_,_)),
+    retractall(general_description_category(_,_)).
 
-:- begin_tests(regla_consultas, [setup(backup), cleanup(restore)]).
+cu_restore :-
+    cu_clear,
+    forall(cu_saved(Fact), assertz(Fact)),
+    retractall(cu_saved(_)).
 
-test(exist_si_existe, [setup(fx)])           :- category_exist(deseo).
-test(exist_no_existe, [setup(fx), fail])     :- category_exist(inventada).
-test(exist_da_una_sola_respuesta, [setup(fx), true(N == 1)]) :-
-    aggregate_all(count, category_exist(deseo), N).
+cu_setup :- cu_save, cu_clear.
 
-test(not_exist_si_no_existe, [setup(fx)])    :- category_not_exist(inventada).
-test(not_exist_si_existe, [setup(fx), fail]) :- category_not_exist(deseo).
+cu_delete_category(Cat) :-
+    retract(categories(Cat, _, _)).
+cu_add_expense(Cat) :-
+    assertz(expenses(2026, 5, 10, "x", 100, Cat, "General")).
+cu_add_category(Cat) :-
+    assertz(categories(Cat, "descripcion", 0)).
+cu_add_text(Hint, Cat) :-
+    assertz(text_rule(Hint, Cat)).
+cu_add_context(Word, Context, Cat) :-
+    assertz(context_exception(Word, Context, Cat)).
+cu_add_general(Desc, Cat) :-
+    assertz(general_description_category(Desc, Cat)).
 
-test(unused_sin_gastos, [setup(fx)])         :- category_unused(deseo).
-test(unused_con_gasto_de_otra_categoria, [setup(fx)]) :-
-    add_expense(necesidad),
-    category_unused(deseo).
-test(unused_con_gasto_propio, [setup(fx), fail]) :-
-    add_expense(deseo),
-    category_unused(deseo).
+:- begin_tests(category_existence, [setup(cu_setup), cleanup(cu_restore)]).
 
-:- end_tests(regla_consultas).
+test(exists, [setup(cu_add_category(comida)), cleanup(cu_clear)]) :-
+    category_exist(comida).
 
-:- begin_tests(regla_valid_update_arguments).   % algo debe cambiar: nombre o descripcion
+test(does_not_exist, [fail]) :-
+    category_exist(comida).
 
-test(cambia_nombre)        :- valid_update_arguments(a, b, "x", "x").
-test(cambia_descripcion)   :- valid_update_arguments(a, a, "x", "y").
-test(nada_cambia, fail)    :- valid_update_arguments(a, a, "x", "x").
-test(cambian_ambos_una_sola_respuesta, [true(N == 1)]) :-
-    aggregate_all(count, valid_update_arguments(a, b, "x", "y"), N).
+test(exist_is_deterministic,
+     [setup((cu_add_category(comida), cu_add_category(comida))), cleanup(cu_clear)]) :-
+    findall(x, category_exist(comida), L),
+    L == [x].
 
-:- end_tests(regla_valid_update_arguments).
+test(not_exist_true) :-
+    category_not_exist(comida).
+
+test(not_exist_false, [fail, setup(cu_add_category(comida)), cleanup(cu_clear)]) :-
+    category_not_exist(comida).
+
+test(ahorro_cannot_be_duplicated, [fail, setup(cu_add_category(ahorro)), cleanup(cu_clear)]) :-
+    category_not_exist(ahorro).
+
+test(ahorro_free_after_delete,
+     [setup(cu_add_category(ahorro)), cleanup(cu_clear)]) :-
+    cu_delete_category(ahorro),
+    category_not_exist(ahorro).
+
+:- end_tests(category_existence).
+
+:- begin_tests(category_unused, [setup(cu_setup), cleanup(cu_restore)]).
+
+test(free_category) :-
+    category_unused(libre).
+
+test(used_by_expense, [fail, setup(cu_add_expense(viaje)), cleanup(cu_clear)]) :-
+    category_unused(viaje).
+
+test(used_by_text_rule, [fail, setup(cu_add_text("cine", ocio)), cleanup(cu_clear)]) :-
+    category_unused(ocio).
+
+test(used_by_context_exception,
+     [fail, setup(cu_add_context("hospital", "urgencia", salud)), cleanup(cu_clear)]) :-
+    category_unused(salud).
+
+test(used_by_general_description,
+     [fail, setup(cu_add_general("Comida", comida)), cleanup(cu_clear)]) :-
+    category_unused(comida).
+
+test(other_category_still_free, [setup(cu_add_text("cine", ocio)), cleanup(cu_clear)]) :-
+    category_unused(libre).
+
+:- end_tests(category_unused).

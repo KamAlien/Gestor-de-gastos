@@ -3,6 +3,7 @@
 % GUARDAR Y CARGAR CATEGORIAS
 %=========================================================================================
 :- ensure_loaded('../../datos').
+:- ensure_loaded(persistence_common).
 
 % dinamico para poder cambiarlo en las pruebas y no tocar el archivo real
 :- dynamic categories_file/1.
@@ -15,6 +16,7 @@ save_categories:-
     save_categories(File).
 
 save_categories(File):-
+    ensure_parent_directory(File),
     setup_call_cleanup(
         open(File, write, Stream, [encoding(utf8)]),
         forall(categories(Category, Description, Percent),
@@ -38,12 +40,3 @@ load_categories(File):-
     forall(member(categories(Category, Description, Percent), Terms),   % ignora lo que no sea categories/3
            assertz(categories(Category, Description, Percent))).
 load_categories(_).
-
-% Lee el archivo termino por termino hasta el final y devuelve la lista
-read_terms(Stream, Terms):-
-    read(Stream, Term),
-    (   Term == end_of_file
-    ->  Terms = []
-    ;   Terms = [Term | Rest],
-        read_terms(Stream, Rest)
-    ).
